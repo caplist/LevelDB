@@ -33,14 +33,15 @@ class LEVELDB_EXPORT Slice {
   Slice(const char* d, size_t n) : data_(d), size_(n) {}
 
   // Create a slice that refers to the contents of "s"
+  // data() 得到const char*类型的指针
   Slice(const std::string& s) : data_(s.data()), size_(s.size()) {}
 
   // Create a slice that refers to s[0,strlen(s)-1]
   Slice(const char* s) : data_(s), size_(strlen(s)) {}
 
   // Intentionally copyable.
-  Slice(const Slice&) = default;
-  Slice& operator=(const Slice&) = default;
+  Slice(const Slice&) = default;      ///< 拷贝构造函数
+  Slice& operator=(const Slice&) = default;  ///< 拷贝赋值函数 ， 都使用编译器生成的默认版本
 
   // Return a pointer to the beginning of the referenced data
   const char* data() const { return data_; }
@@ -81,13 +82,14 @@ class LEVELDB_EXPORT Slice {
   int compare(const Slice& b) const;
 
   // Return true iff "x" is a prefix of "*this"
+  // 判断x对象是否是当前Slice的前缀
   bool starts_with(const Slice& x) const {
     return ((size_ >= x.size_) && (memcmp(data_, x.data_, x.size_) == 0));
   }
 
  private:
-  const char* data_;
-  size_t size_;
+  const char* data_;        ///< 指向当前数据的指针
+  size_t size_;             ///< 指针指向的数据的长度
 };
 
 inline bool operator==(const Slice& x, const Slice& y) {
@@ -97,8 +99,10 @@ inline bool operator==(const Slice& x, const Slice& y) {
 
 inline bool operator!=(const Slice& x, const Slice& y) { return !(x == y); }
 
+//
 inline int Slice::compare(const Slice& b) const {
   const size_t min_len = (size_ < b.size_) ? size_ : b.size_;
+  // memcmp函数是一个标准的库函数，用于比较两个内存块。它需要三个参数：指向第一个内存块的指针、指向第二个内存块和要比较的字节数。
   int r = memcmp(data_, b.data_, min_len);
   if (r == 0) {
     if (size_ < b.size_)
