@@ -84,7 +84,7 @@ class LEVELDB_EXPORT Status {
     kInvalidArgument = 4,
     kIOError = 5
   };
-
+  // 得到code：状态码
   Code code() const {
     return (state_ == nullptr) ? kOk : static_cast<Code>(state_[4]);
   }
@@ -97,7 +97,7 @@ class LEVELDB_EXPORT Status {
   //    state_[0..3] == length of message
   //    state_[4]    == code
   //    state_[5..]  == message
-  const char* state_;
+  const char* state_; ///< 字符数组存储消息数据 0-3表示消息长度 4表示code 5-表示具体消息
 };
 
 inline Status::Status(const Status& rhs) {

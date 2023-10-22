@@ -82,7 +82,7 @@ Status WriteBatch::Iterate(Handler* handler) const {
 int WriteBatchInternal::Count(const WriteBatch* b) {
   return DecodeFixed32(b->rep_.data() + 8);
 }
-
+// 指定方式进行编码
 void WriteBatchInternal::SetCount(WriteBatch* b, int n) {
   EncodeFixed32(&b->rep_[8], n);
 }
@@ -94,7 +94,7 @@ SequenceNumber WriteBatchInternal::Sequence(const WriteBatch* b) {
 void WriteBatchInternal::SetSequence(WriteBatch* b, SequenceNumber seq) {
   EncodeFixed64(&b->rep_[0], seq);
 }
-
+// 加入k : v 的键值对
 void WriteBatch::Put(const Slice& key, const Slice& value) {
   WriteBatchInternal::SetCount(this, WriteBatchInternal::Count(this) + 1);
   rep_.push_back(static_cast<char>(kTypeValue));

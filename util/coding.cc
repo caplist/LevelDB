@@ -68,7 +68,7 @@ void PutVarint64(std::string* dst, uint64_t v) {
   char* ptr = EncodeVarint64(buf, v);
   dst->append(buf, ptr - buf);
 }
-
+// 加入长度为value.size()的消息
 void PutLengthPrefixedSlice(std::string* dst, const Slice& value) {
   PutVarint32(dst, value.size());
   dst->append(value.data(), value.size());

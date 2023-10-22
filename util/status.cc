@@ -10,6 +10,7 @@
 
 namespace leveldb {
 
+// 拷贝消息
 const char* Status::CopyState(const char* state) {
   uint32_t size;
   std::memcpy(&size, state, sizeof(size));
@@ -17,12 +18,12 @@ const char* Status::CopyState(const char* state) {
   std::memcpy(result, state, size + 5);
   return result;
 }
-
+// 构造函数：创建状态是code的消息 msg: 0-3（消息长度） , msg2 : 5以后（具体消息）
 Status::Status(Code code, const Slice& msg, const Slice& msg2) {
   assert(code != kOk);
   const uint32_t len1 = static_cast<uint32_t>(msg.size());
   const uint32_t len2 = static_cast<uint32_t>(msg2.size());
-  const uint32_t size = len1 + (len2 ? (2 + len2) : 0);
+  const uint32_t size = len1 + (len2 ? (2 + len2) : 0); ///< 2是冒号和空格
   char* result = new char[size + 5];
   std::memcpy(result, &size, sizeof(size));
   result[4] = static_cast<char>(code);
@@ -34,7 +35,7 @@ Status::Status(Code code, const Slice& msg, const Slice& msg2) {
   }
   state_ = result;
 }
-
+// 将状态码转换为相应的字符串
 std::string Status::ToString() const {
   if (state_ == nullptr) {
     return "OK";
