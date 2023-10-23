@@ -36,7 +36,7 @@ void WriteBatch::Clear() {
   rep_.clear();
   rep_.resize(kHeader);
 }
-
+//目前具体数据的大小
 size_t WriteBatch::ApproximateSize() const { return rep_.size(); }
 
 Status WriteBatch::Iterate(Handler* handler) const {

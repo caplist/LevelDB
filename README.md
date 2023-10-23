@@ -37,6 +37,10 @@
 更新顺序：按照添加的顺序
 Put() : 本质append(),加入k：v键值对
 Delete(): 追加删除key信息
-Append()：多个WriteBatch还可以继续合并
+Append()：多个WriteBatch还可以继续合并，直接复用 write_batch_internal.cc里面的
+Clear(): 本质字符串的clear
+Iterate(): 支持对batch的迭代处理
 
-##### 1.2.2.1.1 leveldb/db/write_batch_internal.h
+
+##### 1.2.2.1.1 leveldb/db/write_batch_internal.h write_batch_internal.cc
+提供静态方法来操作不在公共接口使用的WriteBatch
