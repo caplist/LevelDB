@@ -24,7 +24,7 @@
 namespace leveldb {
 
 // WriteBatch header has an 8-byte sequence number followed by a 4-byte count.
-static const size_t kHeader = 12;
+static const size_t kHeader = 12; ///< 8字节序列号 + 4字节计数器（表示key键值对的个数）
 
 WriteBatch::WriteBatch() { Clear(); }
 
@@ -36,7 +36,7 @@ void WriteBatch::Clear() {
   rep_.clear();
   rep_.resize(kHeader);
 }
-//目前具体数据的大小
+
 size_t WriteBatch::ApproximateSize() const { return rep_.size(); }
 
 Status WriteBatch::Iterate(Handler* handler) const {
@@ -50,8 +50,8 @@ Status WriteBatch::Iterate(Handler* handler) const {
   int found = 0;
   while (!input.empty()) {
     found++;
-    char tag = input[0];
-    input.remove_prefix(1);
+    char tag = input[0];    ///< 解析当前key/value的状态：[kTypeValue/kTypeDeletion]
+    input.remove_prefix(1); ///< 取出来直接删除
     switch (tag) {
       case kTypeValue:
         if (GetLengthPrefixedSlice(&input, &key) &&

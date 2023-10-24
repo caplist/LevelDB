@@ -60,6 +60,7 @@ class LEVELDB_EXPORT WriteBatch {
   //
   // This number is tied to implementation details, and may change across
   // releases. It is intended for LevelDB usage metrics.
+  // batch更新数据后的大小
   size_t ApproximateSize() const;
 
   // Copies the operations in "source" to this batch.
@@ -73,7 +74,7 @@ class LEVELDB_EXPORT WriteBatch {
   Status Iterate(Handler* handler) const;
 
  private:
-  friend class WriteBatchInternal;
+  friend class WriteBatchInternal;  ///< 内部工具性质的辅助类
   
   std::string rep_;  // WriteBatch 的具体数据
 };
