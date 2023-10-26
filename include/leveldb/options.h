@@ -22,6 +22,7 @@ class Snapshot;
 // sequence of key,value pairs.  Each block may be compressed before
 // being stored in a file.  The following enum describes which
 // compression method (if any) is used to compress a block.
+// 压缩方法
 enum CompressionType {
   // NOTE: do not change the values of existing entries, as these are
   // part of the persistent format on disk.
@@ -182,7 +183,7 @@ struct LEVELDB_EXPORT WriteOptions {
   // crash semantics as the "write()" system call.  A DB write
   // with sync==true has similar crash semantics to a "write()"
   // system call followed by "fsync()".
-  bool sync = false;
+  bool sync = false; ///< 是否同步刷盘
 };
 
 }  // namespace leveldb
