@@ -3,6 +3,8 @@
 
 注释：结尾的花括号标明是哪个命名空间的，很舒服
 
+一个一个组件看，最后整体分析
+
 ## 一 阅读源码顺序
 ### 1.1 include/leveldb/slice.h  10/22 重新看完
 维护指针和其他字节数组长度
@@ -46,8 +48,12 @@ Append()：多个WriteBatch还可以继续合并，直接复用 write_batch_inte
 Clear(): 本质字符串的clear
 Iterate(): 支持对batch的迭代处理，为了方便扩展，参数使用的是Handler基类，对应的是抽象工厂模式=>补设计模式的知识
 
-##### 1.2.2.2 leveldb/include/leveldb/iterator.h 10/25 
-
+##### 1.2.2.2 leveldb/include/leveldb/iterator.h 10/25 定义
+和DB一样，纯虚函数的抽象基类，主要接口
 
 ##### 1.2.2.1.1 leveldb/db/write_batch_internal.h write_batch_internal.cc 基本类似，就不细看了
 提供静态方法来操作不在公共接口使用的WriteBatch
+
+
+### 1.3 leveldb/include/leveldb/options.h 10/26 先略过
+记录leveldb中参数信息
