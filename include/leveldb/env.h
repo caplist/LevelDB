@@ -6,7 +6,7 @@
 // operating system functionality like the filesystem etc.  Callers
 // may wish to provide a custom Env object when opening a database to
 // get fine gain control; e.g., to rate limit file system operations.
-//
+
 // All Env implementations are safe for concurrent access from
 // multiple threads without any external synchronization.
 

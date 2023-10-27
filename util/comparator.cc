@@ -23,7 +23,7 @@ class BytewiseComparatorImpl : public Comparator {
   BytewiseComparatorImpl() = default;
 
   const char* Name() const override { return "leveldb.BytewiseComparator"; }
-
+  // 直接复用slice的比较函数
   int Compare(const Slice& a, const Slice& b) const override {
     return a.compare(b);
   }
