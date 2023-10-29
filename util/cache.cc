@@ -42,10 +42,10 @@ namespace {
 // are kept in a circular doubly linked list ordered by access time.
 struct LRUHandle {
   void* value;
-  void (*deleter)(const Slice&, void* value);
-  LRUHandle* next_hash;
-  LRUHandle* next;
-  LRUHandle* prev;
+  void (*deleter)(const Slice&, void* value); /// 自定义回收节点的回调函数
+  LRUHandle* next_hash;///< 哈希冲突的下一个节点
+  LRUHandle* next;///< 双向链表的下一个节点
+  LRUHandle* prev;///< 双向链表的上一个节点
   size_t charge;  // TODO(opt): Only allow uint32_t?
   size_t key_length;
   bool in_cache;     // Whether entry is in the cache.
@@ -148,6 +148,7 @@ class HandleTable {
 };
 
 // A single shard of sharded cache.
+/// 分片缓存的单个分片
 class LRUCache {
  public:
   LRUCache();
