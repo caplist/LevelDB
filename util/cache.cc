@@ -178,11 +178,11 @@ class LRUCache {
   bool FinishErase(LRUHandle* e) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   // Initialized before use.
-  size_t capacity_;
+  size_t capacity_;     ///< LRU缓存的容量
 
   // mutex_ protects the following state.
-  mutable port::Mutex mutex_;
-  size_t usage_ GUARDED_BY(mutex_);
+  mutable port::Mutex mutex_;       ///<  保护LRUCache操作
+  size_t usage_ GUARDED_BY(mutex_); ///<  获取当前LRUCache已经使用的内存
 
   // Dummy head of LRU list.
   // lru.prev is newest entry, lru.next is oldest entry.
@@ -193,9 +193,11 @@ class LRUCache {
   // Entries are in use by clients, and have refs >= 2 and in_cache==true.
   LRUHandle in_use_ GUARDED_BY(mutex_);
 
-  HandleTable table_ GUARDED_BY(mutex_);
+  HandleTable table_ GUARDED_BY(mutex_);   ///<  哈希表 用于快速获取某个节点
 };
-
+/**
+ * @brief 构造函数:初始化双向链表
+*/
 LRUCache::LRUCache() : capacity_(0), usage_(0) {
   // Make empty circular linked lists.
   lru_.next = &lru_;
@@ -203,7 +205,9 @@ LRUCache::LRUCache() : capacity_(0), usage_(0) {
   in_use_.next = &in_use_;
   in_use_.prev = &in_use_;
 }
-
+/**
+ * @brief 析构函数:释放只在缓存中的节点，真正是否释放需要看Unref函数
+*/
 LRUCache::~LRUCache() {
   assert(in_use_.next == &in_use_);  // Error if caller has an unreleased handle
   for (LRUHandle* e = lru_.next; e != &lru_;) {
@@ -215,7 +219,9 @@ LRUCache::~LRUCache() {
     e = next;
   }
 }
-
+/**
+ * @brief 增加引用
+*/
 void LRUCache::Ref(LRUHandle* e) {
   if (e->refs == 1 && e->in_cache) {  // If on lru_ list, move to in_use_ list.
     LRU_Remove(e);
@@ -223,7 +229,9 @@ void LRUCache::Ref(LRUHandle* e) {
   }
   e->refs++;
 }
-
+/**
+ * @brief 节点引用等于0，才能调用free函数，否则只能移动
+*/
 void LRUCache::Unref(LRUHandle* e) {
   assert(e->refs > 0);
   e->refs--;
@@ -250,7 +258,9 @@ void LRUCache::LRU_Append(LRUHandle* list, LRUHandle* e) {
   e->prev->next = e;
   e->next->prev = e;
 }
-
+/**
+ * @brief 查询目标节点 
+*/
 Cache::Handle* LRUCache::Lookup(const Slice& key, uint32_t hash) {
   MutexLock l(&mutex_);
   LRUHandle* e = table_.Lookup(key, hash);
@@ -259,12 +269,16 @@ Cache::Handle* LRUCache::Lookup(const Slice& key, uint32_t hash) {
   }
   return reinterpret_cast<Cache::Handle*>(e);
 }
-
+/**
+ * @brief 释放句柄，本质还是操作引用
+*/
 void LRUCache::Release(Cache::Handle* handle) {
   MutexLock l(&mutex_);
   Unref(reinterpret_cast<LRUHandle*>(handle));
 }
-
+/**
+ * @brief 将节点插入到LRUCache中,会保留节点的hash值
+*/
 Cache::Handle* LRUCache::Insert(const Slice& key, uint32_t hash, void* value,
                                 size_t charge,
                                 void (*deleter)(const Slice& key,

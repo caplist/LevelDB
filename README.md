@@ -65,7 +65,7 @@ Iterate(): 支持对batch的迭代处理，为了方便扩展，参数使用的�
 用来访问操作系统功能（文件系统等）的接口
 所有Env实现都可以安全地从多个线程进行并发访问，无需任何外部同步
 
-WAL日志
+## WAL日志
 ### 1.6 leveldb/db/filename.h 10/29 看完
 db相关的文件名的一些操作
 直接在命名空间leveldb 下面写的，没有封装成类
@@ -78,6 +78,9 @@ LRUHandle : 主要用于自定义的hashtable 和 lru缓存节点
 cache : 纯虚基类
 LRUCache : 
 SharedLRUCache : 继承Cache，常用操作：基本是调用内部接口
-db的数据被持久化到文件中时，以一定的规则进行组织=>文件格式sstable(sorted strint table)
+db的数据被持久化到文件中时，以一定的规则进行组织=>文件格式sstable(sorted string table)
 
-SST
+## SST 10/30
+SST的设计注意事项：查找速度（创建索引） 文件大小（压缩和分块）
+
+### leveldb/table/format.h format.cc 10/30  不是很理解，先跳过 
