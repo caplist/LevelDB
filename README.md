@@ -83,4 +83,21 @@ db的数据被持久化到文件中时，以一定的规则进行组织=>文件�
 ## SST 10/30
 SST的设计注意事项：查找速度（创建索引） 文件大小（压缩和分块）
 
-### leveldb/table/format.h format.cc 10/30  不是很理解，先跳过 
+### leveldb/table/format.h format.cc  table/block block_builder 11/15 
+1.1 先看doc/table_format.md => 描述了表的逻辑结构
+逻辑上可分为两大块：数据存储区data block， 各种meta block (两者存储格式代码在table/block_builder里面) 
+- k/v对有序存储，被划分到连续排列的data block里面
+- MetaIndex 是 data block的索引 Index block是data block的索引
+- Footer 文件的最后 大小固定
+1.2 block的存储格式
+1.2.1 Block的存储逻辑
+三部分构成：block data, type, crc32 
+type 指定压缩方式
+sst对数据的存储格式都是block，在分析sst的读取和写入逻辑之前，先搞清楚block data
+LevelDB对block data 的管理是读写分离的，读取后的遍历查询由Block类实现 构建则是由BlockBuilder类实现
+1.2.2 重启点-restartpoint
+BlockBuilder对key的存储是前缀压缩的 => 有序字符串能够极大的减少存储空间，但是增加了查找的时间复杂度，所以为了兼顾查找效率，每隔K个key，leveldb就不使用前缀压缩，而是存储整个key => 重启点
+总体来看Block可分为k/v存储区 和 后面的重启点存储区
+1.3 block的构建与读取
+构建：block_builder
+读取：block
