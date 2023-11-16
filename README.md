@@ -101,3 +101,6 @@ BlockBuilder对key的存储是前缀压缩的 => 有序字符串能够极大的�
 1.3 block的构建与读取
 构建：block_builder
 读取：block
+1.4 创建sstable文件
+创建该文件的类：TableBuilder 位置：include/leveldb/table_builder.h table/table_builder.cc
+分析这两个文件即可

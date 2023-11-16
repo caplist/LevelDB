@@ -35,17 +35,17 @@ struct TableBuilder::Rep {
     index_block_options.block_restart_interval = 1;
   }
 
-  Options options;
-  Options index_block_options;
-  WritableFile* file;
+  Options options;                ///< data block的选项
+  Options index_block_options;    ///< index block的选项
+  WritableFile* file;             ///< sstable
   uint64_t offset;
-  Status status;
-  BlockBuilder data_block;
-  BlockBuilder index_block;
-  std::string last_key;
-  int64_t num_entries;
+  Status status;                  ///< 当前状态
+  BlockBuilder data_block;        ///< 当前操作的data block
+  BlockBuilder index_block;       ///< sstable的index block
+  std::string last_key;           ///< 当前data block最后的k/v对的key
+  int64_t num_entries;            ///< 当前data block的k/v对的数量
   bool closed;  // Either Finish() or Abandon() has been called.
-  FilterBlockBuilder* filter_block;
+  FilterBlockBuilder* filter_block; ///< 存储的过滤器信息
 
   // We do not emit the index entry for a block until we have seen the
   // first key for the next data block.  This allows us to use shorter
@@ -56,10 +56,10 @@ struct TableBuilder::Rep {
   // blocks.
   //
   // Invariant: r->pending_index_entry is true only if data_block is empty.
-  bool pending_index_entry;
-  BlockHandle pending_handle;  // Handle to add to index block
+  bool pending_index_entry;    // 标记用于在开始下一个datablock时，Leveldb才将上一个data block加入到index block中
+  BlockHandle pending_handle;  // 添加到index block的data_block的信息
 
-  std::string compressed_output;
+  std::string compressed_output;  ///< 压缩后的data_block 临时存储 写入后即将清空
 };
 
 TableBuilder::TableBuilder(const Options& options, WritableFile* file)
@@ -93,12 +93,13 @@ Status TableBuilder::ChangeOptions(const Options& options) {
 
 void TableBuilder::Add(const Slice& key, const Slice& value) {
   Rep* r = rep_;
+  // 保证文件没有close=>没有调用Finish()或Abandon()
   assert(!r->closed);
   if (!ok()) return;
   if (r->num_entries > 0) {
     assert(r->options.comparator->Compare(key, Slice(r->last_key)) > 0);
   }
-
+  // 表明遇到下一个dada block的第一个k/v对，根据key调整r->last_key
   if (r->pending_index_entry) {
     assert(r->data_block.empty());
     r->options.comparator->FindShortestSeparator(&r->last_key, key);
@@ -107,15 +108,15 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
     r->index_block.Add(r->last_key, Slice(handle_encoding));
     r->pending_index_entry = false;
   }
-
+  // 过滤器不为空，添加key
   if (r->filter_block != nullptr) {
     r->filter_block->AddKey(key);
   }
-
+  // 更新last_key和num_entries
   r->last_key.assign(key.data(), key.size());
   r->num_entries++;
   r->data_block.Add(key, value);
-
+  // 当前data block的大小超过block_size，立刻flush到文件中
   const size_t estimated_block_size = r->data_block.CurrentSizeEstimate();
   if (estimated_block_size >= r->options.block_size) {
     Flush();
@@ -143,6 +144,7 @@ void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle) {
   //    block_data: uint8[n]
   //    type: uint8
   //    crc: uint32
+  // 预处理 + 序列化
   assert(ok());
   Rep* r = rep_;
   Slice raw = block->Finish();
@@ -184,6 +186,7 @@ void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle) {
       break;
     }
   }
+  // 真正的写入逻辑：将data内容写入到文件中，并重置block成初始化状态，清空compressed_output
   WriteRawBlock(block_contents, type, handle);
   r->compressed_output.clear();
   block->Reset();
@@ -214,7 +217,7 @@ Status TableBuilder::Finish() {
   Rep* r = rep_;
   Flush();
   assert(!r->closed);
-  r->closed = true;
+  r->closed = true; // 关闭
 
   BlockHandle filter_block_handle, metaindex_block_handle, index_block_handle;
 
